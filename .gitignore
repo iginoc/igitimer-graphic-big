@@ -1,0 +1,6 @@
+build/
+.waf*
+*.pbw
+.DS_Store
+wscript
+node_modules/
