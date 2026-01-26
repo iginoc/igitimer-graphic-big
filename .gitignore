@@ -1,6 +1,2 @@
 build/
-.waf*
-*.pbw
-.DS_Store
-wscript
-node_modules/
+.lock-waf_linux_build
