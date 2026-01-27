@@ -29,7 +29,7 @@
         {
           "type": "bitmap",
           "name": "MENU_ICON",
-          "file": "images/igitimer.png",
+          "file": "images/25x25.png",
           "menuIcon": true
         },
         {
