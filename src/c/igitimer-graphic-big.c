@@ -3,10 +3,6 @@
 #include <pebble-fctx/ffont.h>
 #include "igitimer-graphic-big.h"
 
-#ifndef INT_TO_FIXED
-#define INT_TO_FIXED(a) ((int32_t)(a) << 16)
-#endif
-
 // Timer state
 static Layer* timer_layer;
 static FFont* timer_font;
@@ -44,7 +40,12 @@ static void timer_tick_callback(void *data) {
         timer_app_timer = app_timer_register(1000, timer_tick_callback, NULL);
       } else {
         // Timer finished - vibrate
-        vibes_double_pulse();
+        static const uint32_t segments[] = { 200, 100, 200, 100, 200, 100, 200 };
+        VibePattern pat = {
+          .durations = segments,
+          .num_segments = sizeof(segments) / sizeof(segments[0]),
+        };
+        vibes_enqueue_custom_pattern(pat);
         timer_running = false;
       }
     }
@@ -68,48 +69,36 @@ static void timer_layer_update_proc(Layer *layer, GContext *ctx) {
   graphics_context_set_text_color(ctx, GColorBlack);
   
   // Draw a background rectangle
-  graphics_context_set_fill_color(ctx, GColorYellow);
+  graphics_context_set_fill_color(ctx, PBL_IF_COLOR_ELSE(GColorYellow, GColorWhite));
   graphics_fill_rect(ctx, bounds, 0, GCornerNone);
-  
-  // Set fill color to black for text
-  graphics_context_set_fill_color(ctx, GColorBlack);
-  
-  // Create FContext for drawing with FFont
-  FContext fctx;
-  fctx_init_context(&fctx, ctx);
-  fctx_set_fill_color(&fctx, GColorBlack);
-  
-  // Load the font (using a large FFont similar to the clock display)
-  if (!timer_font) {
-    timer_font = ffont_create_from_resource(RESOURCE_ID_AVENIR_NEXT_REGULAR);
-  }
-  
-  // Calculate font size to fill most of the screen
-  int font_size = bounds.size.h / 2;
   
   // Draw progress bar (Left side)
   // Green fill (Decreases as timer counts down)
   if (timer_duration_seconds > 0) {
     int fill_height = (int)((uint64_t)timer_remaining_seconds * bounds.size.h / timer_duration_seconds);
-    graphics_context_set_fill_color(ctx, GColorGreen);
+    graphics_context_set_fill_color(ctx, PBL_IF_COLOR_ELSE(GColorGreen, GColorLightGray));
     graphics_fill_rect(ctx, GRect(0, bounds.size.h - fill_height, bounds.size.w, fill_height), 0, GCornerNone);
   }
   
-  // Calculate positions
+  // Set text color for seconds
+  graphics_context_set_text_color(ctx, GColorBlack);
+
   // Center of the screen
   int center_x = bounds.size.w / 2;
   int center_y = bounds.size.h / 2;
-  
-  // Draw seconds
-  FPoint seconds_pos;
-  seconds_pos.x = INT_TO_FIXED(center_x);
-  seconds_pos.y = INT_TO_FIXED(center_y);
 
-  fctx_begin_fill(&fctx);
-  fctx_set_offset(&fctx, seconds_pos);
-  fctx_set_text_em_height(&fctx, timer_font, font_size);
-  fctx_draw_string(&fctx, timer_seconds_str, timer_font, GTextAlignmentCenter, FTextAnchorMiddle);
-  fctx_end_fill(&fctx);
+  // Disegna il tempo usando fctx e il font personalizzato
+  if (timer_font) {
+    FContext fctx;
+    fctx_init_context(&fctx, ctx);
+    fctx_begin_fill(&fctx);
+    fctx_set_fill_color(&fctx, GColorBlack);
+    fctx_set_text_em_height(&fctx, timer_font, 60); // Dimensione del font
+    fctx_set_offset(&fctx, FPointI(center_x, center_y));
+    fctx_draw_string(&fctx, timer_seconds_str, timer_font, GTextAlignmentCenter, FTextAnchorCapMiddle);
+    fctx_end_fill(&fctx);
+    fctx_deinit_context(&fctx);
+  }
   
   int radius = (bounds.size.w < bounds.size.h ? bounds.size.w : bounds.size.h) / 2 - 5;
   int black_radius = radius - 10;
@@ -186,8 +175,6 @@ static void timer_layer_update_proc(Layer *layer, GContext *ctx) {
     graphics_fill_rect(ctx, GRect(start_x, start_y, bar_width, bar_height), 2, GCornersAll);
     graphics_fill_rect(ctx, GRect(start_x + bar_width + gap, start_y, bar_width, bar_height), 2, GCornersAll);
   }
-  
-  fctx_deinit_context(&fctx);
 }
 
 // Initialize timer
@@ -208,6 +195,9 @@ void Timer_init(Window *window) {
   timer_app_timer = NULL;
   anim_timer = NULL;
   
+  // Carica il font personalizzato dalle risorse
+  timer_font = ffont_create_from_resource(RESOURCE_ID_FONT_AVENIR_NEXT_DEMI_BOLD);
+  
   // Initialize display strings
   snprintf(timer_seconds_str, sizeof(timer_seconds_str), "0");
 }
@@ -222,12 +212,12 @@ void Timer_deinit(void) {
     app_timer_cancel(anim_timer);
   }
   
-  if (timer_font) {
-    ffont_destroy(timer_font);
-  }
-  
   if (timer_layer) {
     layer_destroy(timer_layer);
+  }
+
+  if (timer_font) {
+    ffont_destroy(timer_font);
   }
 }
 

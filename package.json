@@ -1,11 +1,15 @@
 {
   "name": "igitimer-graphic-big",
   "author": "iginoc",
-  "version": "1.3.0",
+  "version": "1.5.0",
   "keywords": [
-    "pebble-app"
+    "pebble-app",
+    "timer",
+    "countdown",
+    "utility",
+    "tool"
   ],
-  "private": true,
+  "private": false,
   "dependencies": {
     "pebble-fctx": "^1.6.4"
   },
@@ -15,7 +19,12 @@
     "sdkVersion": "3",
     "enableMultiJS": true,
     "targetPlatforms": [
-      "basalt"
+      "aplite",
+      "basalt",
+      "chalk",
+      "diorite",
+      "emery",
+      "flint"
     ],
     "watchapp": {
       "watchface": false,
@@ -34,13 +43,15 @@
         },
         {
           "type": "raw",
-          "name": "AVENIR_NEXT_REGULAR",
+          "name": "FONT_AVENIR_NEXT_REGULAR",
           "file": "fonts/AvenirNextRegular.ffont"
+        },
+        {
+          "type": "raw",
+          "name": "FONT_AVENIR_NEXT_DEMI_BOLD",
+          "file": "fonts/AvenirNextDemiBold.ffont"
         }
       ]
     }
-  },
-  "devDependencies": {
-    "pebble-fctx-compiler": "^1.2.0"
   }
 }

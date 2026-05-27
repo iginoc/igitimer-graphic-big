@@ -40,7 +40,7 @@ If you need more information on the `pebble` command or a sub-command, append `-
 src/c/           - C source files for the watchapp
 src/pkjs/        - PebbleKitJS files (currently empty)
 worker_src/c/    - Worker source files (optional, not present)
-resources/       - Images, fonts, and other resources (not present)
+resources/       - Images, fonts, and other resources
 ```
 ## Configuration
 
@@ -53,7 +53,7 @@ The application follows the standard Pebble app architecture:
 1. **Main Entry Point**: `src/c` - The `main()` function initializes the app and starts the event loop
 2. **Window Management**: Single window app with text layer for displaying button press feedback
 3. **Event Handling**: Button click handlers registered via `prv_click_config_provider` for UP, DOWN, and SELECT buttons
-
+4. **Graphics**: Uses `pebble-fctx` for anti-aliased vector font rendering
 ## SDK Documentation
 
 The full Pebble SDK documentation is available at https://developer.repebble.com.
